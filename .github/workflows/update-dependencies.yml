@@ -14,12 +14,14 @@ jobs:
     name: Update Go Dependencies
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - uses: ./.github/actions/setup-go
       
-      - name: Update dependencies
+      - name: Update Go version and dependencies
         run: |
+          go get go@latest
+          
           go get -u ./...
           go mod tidy
       

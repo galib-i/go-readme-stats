@@ -1,6 +1,7 @@
 package stats
 
 import (
+	"context"
 	_ "embed"
 	"encoding/json"
 	"fmt"
@@ -27,8 +28,8 @@ type Lang struct {
 
 // FetchStats retrieves language statistics for the authenticated user.
 // Excludes forked repositories and languages from the ignored languages file.
-func FetchStats(ignoredLanguagesData []byte, mode string) ([]Lang, error) {
-	repos, err := fetchRepoNames()
+func FetchStats(ctx context.Context, ignoredLanguagesData []byte, mode string) ([]Lang, error) {
+	repos, err := fetchRepoNames(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch repositories: %w", err)
 	}
@@ -38,7 +39,7 @@ func FetchStats(ignoredLanguagesData []byte, mode string) ([]Lang, error) {
 		return nil, fmt.Errorf("failed to parse ignored languages: %w", err)
 	}
 
-	username, err := getUsername()
+	username, err := getUsername(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get authenticated user: %w", err)
 	}
@@ -51,7 +52,7 @@ func FetchStats(ignoredLanguagesData []byte, mode string) ([]Lang, error) {
 			continue
 		}
 
-		languages, err := fetchRepoLanguages(username, repo.Name)
+		languages, err := fetchRepoLanguages(ctx, username, repo.Name)
 		if err != nil {
 			log.Printf("Warning: Failed to fetch languages for %s: %v", repo.Name, err)
 			continue

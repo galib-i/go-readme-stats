@@ -27,7 +27,7 @@ func GetLanguageStats(c *gin.Context) {
 	header := c.DefaultQuery("header", "Languages")
 	mode := c.DefaultQuery("mode", "bytes")
 
-	languages, err := FetchStats(ignoredLanguages, mode)
+	languages, err := FetchStats(c.Request.Context(), ignoredLanguages, mode)
 	if err != nil {
 		log.Printf("Error: Failed to fetch stats for request %s: %v", c.Request.URL.String(), err)
 		c.String(http.StatusInternalServerError, "Error fetching stats")

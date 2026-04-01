@@ -1,6 +1,7 @@
 package stats
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -8,9 +9,9 @@ import (
 	"os"
 )
 
-func fetchRepoNames() ([]repository, error) {
+func fetchRepoNames(ctx context.Context) ([]repository, error) {
 	url := "https://api.github.com/user/repos"
-	body, err := callAPI(url)
+	body, err := callAPI(ctx, url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch repos: %w", err)
 	}
@@ -23,9 +24,9 @@ func fetchRepoNames() ([]repository, error) {
 	return repos, nil
 }
 
-func fetchRepoLanguages(username, repoName string) (map[string]int, error) {
+func fetchRepoLanguages(ctx context.Context, username, repoName string) (map[string]int, error) {
 	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/languages", username, repoName)
-	body, err := callAPI(url)
+	body, err := callAPI(ctx, url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch languages for %s: %w", repoName, err)
 	}
@@ -38,8 +39,8 @@ func fetchRepoLanguages(username, repoName string) (map[string]int, error) {
 	return languages, nil
 }
 
-func getUsername() (string, error) {
-	body, err := callAPI("https://api.github.com/user")
+func getUsername(ctx context.Context) (string, error) {
+	body, err := callAPI(ctx, "https://api.github.com/user")
 	if err != nil {
 		return "", fmt.Errorf("failed to get user info: %w", err)
 	}
@@ -57,8 +58,8 @@ func getUsername() (string, error) {
 
 // callAPI makes authenticated HTTP requests to the GitHub API.
 // Uses GITHUB_TOKEN environment variable for authentication if available.
-func callAPI(url string) ([]byte, error) {
-	req, err := http.NewRequest("GET", url, nil)
+func callAPI(ctx context.Context, url string) ([]byte, error) {
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
