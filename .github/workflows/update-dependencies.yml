@@ -13,15 +13,19 @@ jobs:
   update-dependencies:
     name: Update Go Dependencies
     runs-on: ubuntu-latest
+    env:
+      GOTOOLCHAIN: auto
     steps:
       - uses: actions/checkout@v6
       
-      - uses: ./.github/actions/setup-go
+      - uses: actions/setup-go@v6
+        with:
+          go-version: 'stable'
       
       - name: Update Go version and dependencies
         run: |
           go get go@latest
-          
+
           go get -u ./...
           go mod tidy
       
