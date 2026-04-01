@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -14,7 +15,7 @@ import (
 // Mock implementations for tests
 func init() {
 	// Default success mock
-	FetchStats = func(ignoredLanguagesData []byte, mode string) ([]stats.Lang, error) {
+	FetchStats = func(ctx context.Context, ignoredLanguagesData []byte, mode string) ([]stats.Lang, error) {
 		return []stats.Lang{
 			{Name: "Go", Percent: 45.5},
 			{Name: "Java", Percent: 30.2},
@@ -84,7 +85,7 @@ func TestGetLanguageStats_Success(t *testing.T) {
 
 func TestGetLanguageStats_StatsFetchFailure(t *testing.T) {
 	originalFetch := FetchStats
-	FetchStats = func(ignoredLanguagesData []byte, mode string) ([]stats.Lang, error) {
+	FetchStats = func(ctx context.Context, ignoredLanguagesData []byte, mode string) ([]stats.Lang, error) {
 		return nil, errors.New("API rate limit exceeded")
 	}
 	defer func() { FetchStats = originalFetch }()
@@ -155,7 +156,7 @@ func TestGetLanguageStats_InvalidTheme(t *testing.T) {
 
 func TestGetLanguageStats_EmptyLanguages(t *testing.T) {
 	originalFetch := FetchStats
-	FetchStats = func(ignoredLanguagesData []byte, mode string) ([]stats.Lang, error) {
+	FetchStats = func(ctx context.Context, ignoredLanguagesData []byte, mode string) ([]stats.Lang, error) {
 		return []stats.Lang{}, nil
 	}
 	defer func() { FetchStats = originalFetch }()

@@ -1,6 +1,7 @@
 package stats
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -13,7 +14,7 @@ func TestCallAPI_Success(t *testing.T) {
 	}))
 	defer server.Close()
 
-	body, err := callAPI(server.URL)
+	body, err := callAPI(context.Background(), server.URL)
 	if err != nil {
 		t.Errorf("callAPI() error = %v", err)
 	}
@@ -30,14 +31,14 @@ func TestCallAPI_HTTPError(t *testing.T) {
 	}))
 	defer server.Close()
 
-	_, err := callAPI(server.URL)
+	_, err := callAPI(context.Background(), server.URL)
 	if err == nil {
 		t.Error("callAPI() expected error for 404 response")
 	}
 }
 
 func TestCallAPI_InvalidURL(t *testing.T) {
-	_, err := callAPI("invalid-url")
+	_, err := callAPI(context.Background(), "invalid-url")
 	if err == nil {
 		t.Error("callAPI() expected error for invalid URL")
 	}

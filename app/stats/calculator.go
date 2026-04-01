@@ -1,9 +1,10 @@
 package stats
 
 import (
+	"cmp"
 	"fmt"
 	"math"
-	"sort"
+	"slices"
 )
 
 const (
@@ -43,12 +44,11 @@ func calculateStats(languageTotals, languageFreq map[string]int, mode string) []
 	}
 
 	// Sort by percentage (desc), then by name (asc) for consistent ordering
-	sort.Slice(result, func(i, j int) bool {
-		if result[i].Percent == result[j].Percent {
-			return result[i].Name < result[j].Name
+	slices.SortFunc(result, func(a, b Lang) int {
+		if c := cmp.Compare(b.Percent, a.Percent); c != 0 {
+			return c
 		}
-
-		return result[i].Percent > result[j].Percent
+		return cmp.Compare(a.Name, b.Name)
 	})
 
 	// Combine languages below topLanguagesCount into "Other"
