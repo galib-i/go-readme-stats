@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"sync"
 )
 
 //go:embed colours.json
@@ -47,26 +48,45 @@ func FetchStats(ctx context.Context, ignoredLanguagesData []byte, mode string) (
 	languageTotals := make(map[string]int)
 	languageFreq := make(map[string]int)
 
+	var wg sync.WaitGroup
+	var mu sync.Mutex
+
+	maxConcurrentRequests := 20
+	sem := make(chan struct{}, maxConcurrentRequests)
+
 	for _, repo := range repos {
 		if repo.Fork {
 			continue
 		}
 
-		languages, err := fetchRepoLanguages(ctx, username, repo.Name)
-		if err != nil {
-			log.Printf("Warning: Failed to fetch languages for %s: %v", repo.Name, err)
-			continue
-		}
+		wg.Add(1)
+		go func(r repository) {
+			defer wg.Done()
 
-		for lang, bytes := range languages {
-			if _, ignored := ignoredLanguages[lang]; ignored {
-				continue
+			sem <- struct{}{}
+			defer func() { <-sem }()
+
+			languages, err := fetchRepoLanguages(ctx, username, repo.Name)
+			if err != nil {
+				log.Printf("Warning: Failed to fetch languages for %s: %v", repo.Name, err)
+				return
 			}
 
-			languageTotals[lang] += bytes
-			languageFreq[lang]++
-		}
+			mu.Lock()
+			defer mu.Unlock()
+
+			for lang, bytes := range languages {
+				if _, ignored := ignoredLanguages[lang]; ignored {
+					continue
+				}
+
+				languageTotals[lang] += bytes
+				languageFreq[lang]++
+			}
+		}(repo)
 	}
+
+	wg.Wait()
 
 	stats := calculateStats(languageTotals, languageFreq, mode)
 	if err := addLanguageColours(stats); err != nil {
