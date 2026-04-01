@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"os"
 
-	"gopkg.in/yaml.v3"
+	"github.com/goccy/go-yaml"
 )
 
 const (
