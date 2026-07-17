@@ -24,3 +24,5 @@ go.work
 .env
 .vercel
 .env*.local
+
+languages.svg
