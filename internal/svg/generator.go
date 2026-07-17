@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"html/template"
 
-	"go-readme-stats/app/stats"
+	"go-readme-stats/internal/stats"
 )
 
 const (
