@@ -46,65 +46,15 @@
       </svg>
 
       <!-- Legend -->
-      <!-- Row 1 -->
-      {{if ge .LanguageCount 1}}
-        <g transform="translate(0, 25)">
-          <circle cx="5" cy="6" r="4.5" fill="{{(index .Languages 0).Colour}}"/>
-          <text x="18" y="10.5" class="lang-name">
-            <tspan class="lang-name-bold">{{(index .Languages 0).Name}}</tspan>
-            <tspan class="lang-percent">{{(index .Languages 0).Percent}}%</tspan>
-          </text>
-        </g>
-      {{end}}
-      {{if ge .LanguageCount 2}}
-        <g transform="translate(150, 25)">
-          <use href="#legend-dot" fill="{{(index .Languages 1).Colour}}"/>
-          <text x="18" y="10.5" class="lang-name">
-            <tspan class="lang-name-bold">{{(index .Languages 1).Name}}</tspan>
-            <tspan class="lang-percent">{{(index .Languages 1).Percent}}%</tspan>
-          </text>
-        </g>
-      {{end}}
-
-      <!-- Row 2 -->
-      {{if ge .LanguageCount 3}}
-        <g transform="translate(0, 45)">
-          <circle cx="5" cy="6" r="4.5" fill="{{(index .Languages 2).Colour}}"/>
-          <text x="18" y="10.5" class="lang-name">
-            <tspan class="lang-name-bold">{{(index .Languages 2).Name}}</tspan>
-            <tspan class="lang-percent">{{(index .Languages 2).Percent}}%</tspan>
-          </text>
-        </g>
-      {{end}}
-      {{if ge .LanguageCount 4}}
-        <g transform="translate(150, 45)">
-          <use href="#legend-dot" fill="{{(index .Languages 3).Colour}}"/>
-          <text x="18" y="10.5" class="lang-name">
-            <tspan class="lang-name-bold">{{(index .Languages 3).Name}}</tspan>
-            <tspan class="lang-percent">{{(index .Languages 3).Percent}}%</tspan>
-          </text>
-        </g>
-      {{end}}
-
-      <!-- Row 3 -->
-      {{if ge .LanguageCount 5}}
-        <g transform="translate(0, 65)">
-          <circle cx="5" cy="6" r="4.5" fill="{{(index .Languages 4).Colour}}"/>
-          <text x="18" y="10.5" class="lang-name">
-            <tspan class="lang-name-bold">{{(index .Languages 4).Name}}</tspan>
-            <tspan class="lang-percent">{{(index .Languages 4).Percent}}%</tspan>
-          </text>
-        </g>
-      {{end}}
-      {{if ge .LanguageCount 6}}
-        <g transform="translate(150, 65)">
-          <circle cx="5" cy="6" r="4.5" fill="{{(index .Languages 5).Colour}}"/>
-          <text x="18" y="10.5" class="lang-name">
-            <tspan class="lang-name-bold">{{(index .Languages 5).Name}}</tspan>
-            <tspan class="lang-percent">{{(index .Languages 5).Percent}}%</tspan>
-          </text>
-        </g>
-      {{end}}
+        {{range $i, $lang := .Languages}}
+          <g transform="translate({{mul (mod $i 2) 150}}, {{add 25 (mul (div $i 2) 20)}})">
+            <circle cx="5" cy="6" r="4.5" fill="{{$lang.Colour}}"/>
+            <text x="18" y="10.5" class="lang-name">
+              <tspan class="lang-name-bold">{{truncate $lang.Name}}</tspan>
+              <tspan class="lang-percent">{{$lang.Percent}}%</tspan>
+            </text>
+          </g>
+        {{end}}
 
     </g>
   </g>

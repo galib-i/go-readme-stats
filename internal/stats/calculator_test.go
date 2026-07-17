@@ -68,7 +68,7 @@ func TestCalculateStats_Raw(t *testing.T) {
 				freq[lang] = 1
 			}
 
-			result := calculateStats(tt.input, freq, "")
+			result := calculateStats(tt.input, freq, "", 6)
 
 			if len(result) != len(tt.expected) {
 				t.Errorf("got %d languages, expected %d", len(result), len(tt.expected))
@@ -131,7 +131,7 @@ func TestCalculateStats_Geometric(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := calculateStats(tt.totals, tt.freq, "geometric")
+			result := calculateStats(tt.totals, tt.freq, "geometric", 6)
 
 			if len(result) != len(tt.expected) {
 				t.Errorf("got %d languages, expected %d", len(result), len(tt.expected))

@@ -15,6 +15,7 @@ func main() {
 	header := flag.String("header", "Languages", "header text for the card")
 	mode := flag.String("mode", "bytes", "percentage calculation mode (bytes or geometric)")
 	ignore := flag.String("ignore", "", "comma-separated list of languages to ignore (e.g. \"HTML,CSS,Shell\")")
+	maxLangs := flag.Int("max-langs", 6, "maximum number of languages to display")
 
 	flag.Parse()
 
@@ -23,7 +24,7 @@ func main() {
 		ignoredLanguages = strings.Split(*ignore, ",")
 	}
 
-	languages, err := stats.FetchStats(context.Background(), ignoredLanguages, *mode)
+	languages, err := stats.FetchStats(context.Background(), ignoredLanguages, *mode, *maxLangs)
 	if err != nil {
 		log.Fatalf("Error fetching stats: %v", err)
 	}
