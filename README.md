@@ -51,37 +51,26 @@ cards:
       - Shell
 ```
 
+The above is equivalent to:
+```bash
+go run ./cmd/go-readme-stats --output="languages-dark.svg" --theme=dark --header="Languages" --mode=geometric --max_langs=6 --ignore="Jupyter Notebook,HTML,CSS,NSIS,PowerShell,Shell"
+```
+
 To generate more cards, simply copy-and-paste another block ([example](https://github.com/galib-i/go-readme-stats/blob/main/stats.yml)).
 
 ### Themes
-
-- dark (default)
   <details>
-    <summary>View card and command</summary>
-
-    ```bash
-    go run ./cmd/go-readme-stats theme=dark
-    ```
+    <summary>dark (default)</summary>
     <img width="300" height="118" alt="image" src="https://github.com/user-attachments/assets/10df753f-cb46-4448-b5bb-ebcb4f1b62a6" />
   </details>
 
-- soft-dark
   <details>
-    <summary>View card and command</summary>
-
-    ```bash
-    go run ./cmd/go-readme-stats theme=soft-dark
-    ```
+    <summary>soft-dark</summary>
     <img width="300" height="118" alt="image" src="https://github.com/user-attachments/assets/a2613437-4a57-4c35-ab39-a9d01214faa1" />
   </details>
 
-- light
   <details>
-    <summary>View card and command</summary>
-
-    ```bash
-    go run ./cmd/go-readme-stats theme=light
-    ```
+    <summary>light</summary>
     <img width="300" height="118" alt="image" src="https://github.com/user-attachments/assets/3ef24020-88b0-420b-a256-4bb2ad8c1b5e" />
   </details>
 
@@ -92,10 +81,3 @@ To generate more cards, simply copy-and-paste another block ([example](https://g
 > [![Languages Card](https://raw.githubusercontent.com/<YOUR USERNAME>/go-readme-stats/output/languages-dark.svg)](https://github.com/galib-i/go-readme-stats#gh-dark-mode-only)
 > [![Languages Card](https://raw.githubusercontent.com/<YOUR USERNAME>/go-readme-stats/output/languages-light.svg)](https://github.com/galib-i/go-readme-stats#gh-light-mode-only)
 > ```
-
-### Custom Header
-<details>
-  <summary>View command</summary>
-
-  ```bash
-  go run ./cmd/go-readme-stats header="Used Languages"
