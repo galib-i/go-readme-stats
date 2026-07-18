@@ -1,0 +1,63 @@
+name: Generate Language Card
+
+permissions:
+  contents: write
+
+on:
+  schedule:
+    - cron: "0 */12 * * *"
+  workflow_dispatch:
+
+jobs:
+  generate:
+    name: Generate languages.svg
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: "stable"
+          cache: true
+
+      - name: Generate languages.svg
+        run: go run ./cmd/go-readme-stats
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Deploy to output branch
+        run: |
+          # Copy the generated SVG to a temp directory
+          mkdir -p /tmp/card-output
+          cp languages.svg /tmp/card-output/languages.svg
+
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+          # Checkout the output branch, or create it as an orphan if it doesn't exist
+          if git fetch origin output 2>/dev/null; then
+            git checkout output
+          else
+            git checkout --orphan output
+          fi
+
+          # Remove all files so the branch only contains the SVG
+          git rm -rf . --quiet
+
+          # Move the SVG back into the working directory
+          mv /tmp/card-output/languages.svg languages.svg
+
+          # Stage the SVG
+          git add languages.svg
+
+          # Only commit and push if there are changes
+          if git diff --staged --quiet; then
+            echo "No changes found."
+          else
+            git commit -m "ci: update languages.svg"
+            git push origin output
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
