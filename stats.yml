@@ -1,6 +1,19 @@
 cards:
-  - output: languages.svg
+  - output: languages-dark.svg
     theme: dark
+    header: Languages
+    mode: geometric
+    max_langs: 6
+    ignore:
+      - Jupyter Notebook
+      - HTML
+      - CSS
+      - NSIS
+      - PowerShell
+      - Shell
+  
+  - output: languages-light.svg
+    theme: light
     header: Languages
     mode: geometric
     max_langs: 6

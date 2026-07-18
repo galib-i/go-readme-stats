@@ -4,6 +4,9 @@ permissions:
   contents: write
 
 on:
+  push:
+    paths:
+      - "stats.yml"
   schedule:
     - cron: "0 */12 * * *"
   workflow_dispatch:
