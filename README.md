@@ -1,106 +1,97 @@
 # Go README Stats
-Add dynamic language usage stats from your projects directly to your personal README as a minimal GitHub-style card.
+Add language usage stats from your projects directly to your personal README as a GitHub-style card. 
+
+<p align="center">
+  <img alt="Languages Card" src="https://raw.githubusercontent.com/galib-i/go-readme-stats/output/languages-dark.svg">
+</p>
 
 > [!IMPORTANT]
-> This will only work for your own GitHub account. It requires tokens from both **GitHub** and **Vercel**.
-> 
-> *A Vercel account is required for this setup: the free tier is sufficient.*
+> This will only work for your own GitHub account: it uses a Personal Access Token (PAT).
 
-> [!CAUTION]
-> Do not share your GitHub or Vercel tokens with anyone, as they provide access to your account.
+- Use `stats.yml` or flags to tweak your card's theme, header, calculation mode, maximum shown languages and ignore list.
+- An updated card is generated every 12 hours (and whenever `stats.yml` changes).
+- Colour updates are fetched on the 1st of every month.
+- Dependencies are updated on the 1st every third month.
 
-## Setup
-### Steps
-1. Clone or [fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) this repository
-2. Sign in to [Vercel](https://vercel.com), go to the dashboard and click **Add New > Project**;
-under **Import Git Repository**, select `go-readme-stats`
-3. Create a [GitHub Personal Access Token (PAT)](https://github.com/settings/tokens/new) with **repo** and **read:user** scopes  
-   *Set the token expiry as you see appropriate*
-4. In the **Environment Variables** section on Vercel, set:  
-   - **Name:** `GITHUB_TOKEN`  
-   - **Value:** *your GitHub token*
-  
-   Then press **Deploy**
+## Get Started
+Cards are generated using GitHub Actions and added to an orphan branch, keeping the main branch free of automated update commits.
 
-If you don’t want to use GitHub Actions, you’ve finished the setup. 
+1. Clone or [fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) this repository, enabling all GitHub Action workflows.
+2. Create a [GitHub Personal Access Token](https://github.com/settings/tokens/new) with **repo** and **read:user** scopes, *setting the expiry as you see appropriate*
+3. In your `go-readme-stats` repository, go to **Settings > Secrets and variables > Actions**, press **New repository secret** and add:
+   - **Name:** `STAT_TOKEN`
+   - **Value:** *the generated PAT* 
 
-To use GitHub Actions for a simple workflow that updates language colours, dependencies and tests before deployment:
+4. Go to the **Actions** tab in your repository, select the card generation workflow, and click **Run workflow** to generate your first SVG.
 
-5. In your `go-readme-stats` repository, go to **Settings > Secrets and variables > Actions** and press **New repository secret**:  
-   - Copy the **PROJECT_ID** from your Vercel project settings and create a secret in GitHub:  
-     - **Name:** `VERCEL_PROJECT_ID`  
-     - **Value:** *your Vercel `PROJECT_ID`*  
-   - Copy the **TEAM_ID** from your Vercel dashboard ([find your team ID](https://vercel.com/docs/accounts#find-your-team-id)) and create another GitHub secret:  
-     - **Name:** `VERCEL_ORG_ID`  
-     - **Value:** *your Vercel `TEAM_ID`*  
-   - Generate a [Vercel account token](https://vercel.com/guides/how-do-i-use-a-vercel-api-access-token) and create a final GitHub secret:  
-     - **Name:** `VERCEL_TOKEN`  
-     - **Value:** *your Vercel token*
-
-    *Alternatively, find `projectId` and `orgId` in `.vercel/project.json`*
-
-6. Enable all GitHub Action workflows on your repository  
-
-## Usage
-The base endpoint is `/api/langs`.
-
+### Configuration
 By default, up to 6 languages are shown. If there are more, the top 5 are shown individually and the rest are grouped under *Other*.
 
-### Basic Example
-Add this to your `README.md`:
+It is recommended to configure your card by simply editing `stats.yml`, alternatively, you can use command-line flags to the run command on line 29 of `.github/workflows/generate-card.yml`.
+
+Configuration is prioritised in this order: flags, `stats.yml`, then defaults.
+
 ```yaml
-![Languages Card](https://<YOUR VERCEL DOMAIN>/api/langs)
+cards:
+  - output: languages-dark.svg    # File name
+    theme: dark
+    header: Languages
+    mode: geometric               # Percentage calculation method
+    max_langs: 6
+    ignore:
+      - Jupyter Notebook
+      - HTML
+      - CSS
+      - NSIS
+      - PowerShell
+      - Shell
 ```
+
+To generate more cards, simply copy-and-paste another block ([example](https://github.com/galib-i/go-readme-stats/blob/main/stats.yml)).
+
 ### Themes
-- Dark (default)
-```yaml
-![Languages Card](https://<YOUR VERCEL DOMAIN>/api/langs?theme=dark)
-```
-<img width="300" height="118" alt="image" src="https://github.com/user-attachments/assets/10df753f-cb46-4448-b5bb-ebcb4f1b62a6" />  
-<br><br>
 
-- Soft-dark
-```yaml
-![Languages Card](https://<YOUR VERCEL DOMAIN>/api/langs?theme=soft-dark)
-```
-<img width="300" height="118" alt="image" src="https://github.com/user-attachments/assets/a2613437-4a57-4c35-ab39-a9d01214faa1" />  
-<br><br>
+- dark (default)
+  <details>
+    <summary>View card and command</summary>
 
-- Light
-```yaml
-![Languages Card](https://<YOUR VERCEL DOMAIN>/api/langs?theme=light)
-```
-<img width="300" height="118" alt="image" src="https://github.com/user-attachments/assets/3ef24020-88b0-420b-a256-4bb2ad8c1b5e" />  
-<br><br>
+    ```bash
+    go run ./cmd/go-readme-stats theme=dark
+    ```
+    <img width="300" height="118" alt="image" src="https://github.com/user-attachments/assets/10df753f-cb46-4448-b5bb-ebcb4f1b62a6" />
+  </details>
 
->[!TIP]
->Wrap the card with GitHub’s fragment identifiers to show cards conditionally in light or dark mode (`#gh-light-mode-only` / `#gh-dark-mode-only`):
-```yaml
-[![Light Languages Card](https://<YOUR VERCEL DOMAIN>/api/langs?theme=light)](https://github.com/<YOUR USERNAME>/go-readme-stats#gh-light-mode-only)
-[![Dark Languages Card](https://<YOUR VERCEL DOMAIN>/api/langs)](https://github.com/<YOUR USERNAME>/go-readme-stats#gh-dark-mode-only)
-```
+- soft-dark
+  <details>
+    <summary>View card and command</summary>
+
+    ```bash
+    go run ./cmd/go-readme-stats theme=soft-dark
+    ```
+    <img width="300" height="118" alt="image" src="https://github.com/user-attachments/assets/a2613437-4a57-4c35-ab39-a9d01214faa1" />
+  </details>
+
+- light
+  <details>
+    <summary>View card and command</summary>
+
+    ```bash
+    go run ./cmd/go-readme-stats theme=light
+    ```
+    <img width="300" height="118" alt="image" src="https://github.com/user-attachments/assets/3ef24020-88b0-420b-a256-4bb2ad8c1b5e" />
+  </details>
+
+> [!TIP]
+> Wrap the card with GitHub’s fragment identifiers to show cards conditionally in light or dark mode (`#gh-light-mode-only` / `#gh-dark-mode-only`):
+> 
+> ```markdown
+> [![Languages Card](https://raw.githubusercontent.com/<YOUR USERNAME>/go-readme-stats/output/languages-dark.svg)](https://github.com/galib-i/go-readme-stats#gh-dark-mode-only)
+> [![Languages Card](https://raw.githubusercontent.com/<YOUR USERNAME>/go-readme-stats/output/languages-light.svg)](https://github.com/galib-i/go-readme-stats#gh-light-mode-only)
+> ```
+
 ### Custom Header
-Change the title in the card with the `?header=` parameter (use %20 for spaces):
+<details>
+  <summary>View command</summary>
 
-```yaml
-![Languages Card](https://<YOUR VERCEL DOMAIN>/api/langs?header=Used%20Languages)
-```
-
-### Percentage Calculation Method
-By default, percentages are calculated as *language bytes ÷ total bytes*.
-
-This can overweight languages that use more bytes to express the same logic, so you can switch to geometric mean with `?mode=geometric`, which downweights extremes and attempts to better reflect the typical language mix across projects:
-
-```yaml
-![Languages Card](https://<YOUR VERCEL DOMAIN>/api/langs?mode=geometric)
-```
-<img width="300" height="118" alt="image" src="https://github.com/user-attachments/assets/10df753f-cb46-4448-b5bb-ebcb4f1b62a6" /> <img width="300" height="118" alt="image" src="https://github.com/user-attachments/assets/13c5de13-68de-4423-9e7e-e2cc800f4340" />  
-
-
-### Combine Options
-Combine parameters with `&`:
-```yaml
-![Languages Card](https://<YOUR VERCEL DOMAIN>/api/langs?theme=light&mode=geometric)
-```
-<br><br>
-*Example in my [profile](https://github.com/galib-i)*
+  ```bash
+  go run ./cmd/go-readme-stats header="Used Languages"
