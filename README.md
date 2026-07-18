@@ -23,6 +23,10 @@ Cards are generated using GitHub Actions and added to an orphan branch, keeping 
    - **Value:** *the generated PAT* 
 
 4. Go to the **Actions** tab in your repository, select the card generation workflow, and click **Run workflow** to generate your first SVG.
+5. Copy-and-paste the link of the SVG into your README:
+  ```bash
+  ![Languages Card](https://raw.githubusercontent.com/<YOUR USERNAME>/go-readme-stats/output/languages-dark.svg)
+  ```
 
 ### Configuration
 By default, up to 6 languages are shown. If there are more, the top 5 are shown individually and the rest are grouped under *Other*.
