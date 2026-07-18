@@ -25,7 +25,7 @@ jobs:
       - name: Generate languages.svg
         run: go run ./cmd/go-readme-stats
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.STATS_TOKEN }}
 
       - name: Deploy to output branch
         run: |
