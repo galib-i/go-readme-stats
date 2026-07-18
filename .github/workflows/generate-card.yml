@@ -31,7 +31,7 @@ jobs:
         run: |
           # Copy the generated SVG to a temp directory
           mkdir -p /tmp/card-output
-          cp languages.svg /tmp/card-output/languages.svg
+          cp ./*.svg /tmp/card-output/
 
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
@@ -47,10 +47,10 @@ jobs:
           git rm -rf . --quiet
 
           # Move the SVG back into the working directory
-          mv /tmp/card-output/languages.svg languages.svg
+          mv /tmp/card-output/*.svg .
 
           # Stage the SVG
-          git add languages.svg
+          git add ./*.svg
 
           # Only commit and push if there are changes
           if git diff --staged --quiet; then

@@ -2,40 +2,81 @@ package main
 
 import (
 	"context"
-	"flag"
-	"go-readme-stats/internal/stats"
-	"go-readme-stats/internal/svg"
 	"log"
 	"os"
-	"strings"
+
+	"go-readme-stats/internal/stats"
+	"go-readme-stats/internal/svg"
+
+	"github.com/goccy/go-yaml"
 )
 
+type cardConfig struct {
+	Output   string   `yaml:"output"`
+	Theme    string   `yaml:"theme"`
+	Header   string   `yaml:"header"`
+	Mode     string   `yaml:"mode"`
+	MaxLangs int      `yaml:"max_langs"`
+	Ignore   []string `yaml:"ignore"`
+}
+
+type config struct {
+	Cards []cardConfig `yaml:"cards"`
+}
+
+// loadConfig reads stats.yml and returns the parsed configuration.
+func loadConfig(path string) config {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		log.Fatalf("Failed to read %s: %v", path, err)
+	}
+
+	var cfg config
+	if err := yaml.Unmarshal(data, &cfg); err != nil {
+		log.Fatalf("Failed to parse %s: %v", path, err)
+	}
+
+	// Apply per-card defaults for any omitted fields
+	for i := range cfg.Cards {
+		c := &cfg.Cards[i]
+		if c.Output == "" {
+			c.Output = "languages.svg"
+		}
+		if c.Theme == "" {
+			c.Theme = "dark"
+		}
+		if c.Header == "" {
+			c.Header = "Languages"
+		}
+		if c.Mode == "" {
+			c.Mode = "bytes"
+		}
+		if c.MaxLangs == 0 {
+			c.MaxLangs = 6
+		}
+	}
+
+	return cfg
+}
+
 func main() {
-	theme := flag.String("theme", "dark", "theme for the card (dark, soft-dark or light)")
-	header := flag.String("header", "Languages", "header text for the card")
-	mode := flag.String("mode", "bytes", "percentage calculation mode (bytes or geometric)")
-	ignore := flag.String("ignore", "", "comma-separated list of languages to ignore (e.g. \"HTML,CSS,Shell\")")
-	maxLangs := flag.Int("max-langs", 6, "maximum number of languages to display")
+	cfg := loadConfig("stats.yml")
 
-	flag.Parse()
+	for _, card := range cfg.Cards {
+		languages, err := stats.FetchStats(context.Background(), card.Ignore, card.Mode, card.MaxLangs)
+		if err != nil {
+			log.Fatalf("Error fetching stats for %s: %v", card.Output, err)
+		}
 
-	var ignoredLanguages []string
-	if *ignore != "" {
-		ignoredLanguages = strings.Split(*ignore, ",")
-	}
+		svgContent, err := svg.Generate(card.Theme, card.Header, languages)
+		if err != nil {
+			log.Fatalf("Error generating SVG for %s: %v", card.Output, err)
+		}
 
-	languages, err := stats.FetchStats(context.Background(), ignoredLanguages, *mode, *maxLangs)
-	if err != nil {
-		log.Fatalf("Error fetching stats: %v", err)
-	}
+		if err = os.WriteFile(card.Output, []byte(svgContent), 0644); err != nil {
+			log.Fatalf("Error saving %s: %v", card.Output, err)
+		}
 
-	svgContent, err := svg.Generate(*theme, *header, languages)
-	if err != nil {
-		log.Fatalf("Error generating SVG: %v", err)
-	}
-
-	err = os.WriteFile("languages.svg", []byte(svgContent), 0644)
-	if err != nil {
-		log.Fatalf("Error saving file: %v", err)
+		log.Printf("Generated %s", card.Output)
 	}
 }
