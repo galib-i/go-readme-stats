@@ -8,15 +8,13 @@ import (
 )
 
 const (
-	maxVisibleLanguages = 6
-	topLanguagesCount   = maxVisibleLanguages - 1 // Number of individual languages before grouping into "Other"
-	percentPrecision    = 10                      // One decimal precision (e.g. 10.4%)
+	percentPrecision = 10 // One decimal precision (e.g. 10.4%)
 )
 
 // calculateStats computes language percentages by raw bytes or geometric mean.
 // Languages are sorted by descending percentage, then ascending name.
-// If more than maxVisibleLanguages exist, languages beyond topLanguagesCount are grouped into "Other".
-func calculateStats(languageTotals, languageFreq map[string]int, mode string) []Lang {
+// If more than maxLangs exist, languages at maxLangs-1 are grouped into "Other".
+func calculateStats(languageTotals, languageFreq map[string]int, mode string, maxLangs int) []Lang {
 	scores := make(map[string]float64)
 	var totalScore float64
 
@@ -51,15 +49,17 @@ func calculateStats(languageTotals, languageFreq map[string]int, mode string) []
 		return cmp.Compare(a.Name, b.Name)
 	})
 
-	// Combine languages below topLanguagesCount into "Other"
-	if len(result) > maxVisibleLanguages {
+	// Combine languages below top into "Other"
+	if maxLangs > 0 && len(result) > maxLangs {
+		top := maxLangs - 1
 		var otherPercent float64
-		for _, lang := range result[topLanguagesCount:] {
+
+		for _, lang := range result[top:] {
 			otherPercent += lang.Percent
 		}
 
-		result = append(result[:topLanguagesCount], Lang{
-			Name:    fmt.Sprintf("Other (%d)", len(result)-topLanguagesCount),
+		result = append(result[:top], Lang{
+			Name:    fmt.Sprintf("Other (%d)", len(result)-top),
 			Percent: otherPercent,
 		})
 	}

@@ -22,30 +22,6 @@ func TestLoadLanguageColours(t *testing.T) {
 	}
 }
 
-func TestParseIgnoredLanguages(t *testing.T) {
-	testData := []byte(`["HTML", "CSS"]`)
-	ignored, err := parseIgnoredLanguages(testData)
-	if err != nil {
-		t.Errorf("parseIgnoredLanguages() error = %v", err)
-		return
-	}
-
-	if _, exists := ignored["HTML"]; !exists {
-		t.Error("HTML should be in ignored languages")
-	}
-
-	if _, exists := ignored["CSS"]; !exists {
-		t.Error("CSS should be in ignored languages")
-	}
-}
-
-func TestParseIgnoredLanguages_InvalidFile(t *testing.T) {
-	_, err := parseIgnoredLanguages([]byte("{invalid}"))
-	if err == nil {
-		t.Error("parseIgnoredLanguages() expected error for invalid JSON")
-	}
-}
-
 func TestAddLanguageColours(t *testing.T) {
 	languages := []Lang{
 		{Name: "Go", Percent: 50.0},

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"slices"
 	"sync"
 )
 
@@ -28,16 +29,11 @@ type Lang struct {
 }
 
 // FetchStats retrieves language statistics for the authenticated user.
-// Excludes forked repositories and languages from the ignored languages file.
-func FetchStats(ctx context.Context, ignoredLanguagesData []byte, mode string) ([]Lang, error) {
+// Excludes forked repositories and languages in the ignored list.
+func FetchStats(ctx context.Context, ignoredLanguages []string, mode string, maxLangs int) ([]Lang, error) {
 	repos, err := fetchRepoNames(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch repositories: %w", err)
-	}
-
-	ignoredLanguages, err := parseIgnoredLanguages(ignoredLanguagesData)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse ignored languages: %w", err)
 	}
 
 	username, err := getUsername(ctx)
@@ -59,9 +55,7 @@ func FetchStats(ctx context.Context, ignoredLanguagesData []byte, mode string) (
 			continue
 		}
 
-		wg.Add(1)
-		go func(r repository) {
-			defer wg.Done()
+		wg.Go(func() {
 
 			sem <- struct{}{}
 			defer func() { <-sem }()
@@ -76,19 +70,19 @@ func FetchStats(ctx context.Context, ignoredLanguagesData []byte, mode string) (
 			defer mu.Unlock()
 
 			for lang, bytes := range languages {
-				if _, ignored := ignoredLanguages[lang]; ignored {
+				if slices.Contains(ignoredLanguages, lang) {
 					continue
 				}
 
 				languageTotals[lang] += bytes
 				languageFreq[lang]++
 			}
-		}(repo)
+		})
 	}
 
 	wg.Wait()
 
-	stats := calculateStats(languageTotals, languageFreq, mode)
+	stats := calculateStats(languageTotals, languageFreq, mode, maxLangs)
 	if err := addLanguageColours(stats); err != nil {
 		return nil, fmt.Errorf("failed to add colours: %w", err)
 	}
@@ -120,18 +114,4 @@ func loadLanguageColours() (map[string]string, error) {
 	}
 
 	return colours, nil
-}
-
-func parseIgnoredLanguages(data []byte) (map[string]struct{}, error) {
-	var languages []string
-	if err := json.Unmarshal(data, &languages); err != nil {
-		return nil, fmt.Errorf("failed to decode ignored languages: %w", err)
-	}
-
-	set := make(map[string]struct{})
-	for _, lang := range languages {
-		set[lang] = struct{}{}
-	}
-
-	return set, nil
 }

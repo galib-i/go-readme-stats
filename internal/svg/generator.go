@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"html/template"
 
-	"go-readme-stats/app/stats"
+	"go-readme-stats/internal/stats"
 )
 
 const (
@@ -50,6 +50,16 @@ func calculateSVGHeight(languageCount int) float64 {
 func generateSVG(data SVGData) (string, error) {
 	tmpl, err := template.New(templateName).Funcs(template.FuncMap{
 		"sumPrev": sumPreviousPercent,
+		"add":     func(a, b int) int { return a + b },
+		"mul":     func(a, b int) int { return a * b },
+		"div":     func(a, b int) int { return a / b },
+		"mod":     func(a, b int) int { return a % b },
+		"truncate": func(name string) string {
+			if len(name) > 12 {
+				return name[:12] + "..."
+			}
+			return name
+		},
 	}).Parse(templateContent)
 
 	if err != nil {

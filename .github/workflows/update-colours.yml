@@ -5,7 +5,7 @@ permissions:
 
 on:
   schedule:
-    - cron: '0 0 1 * *' # Monthly on the 1st day
+    - cron: "0 0 1 * *" # Monthly on the 1st day
   workflow_dispatch: # Manual trigger
 
 jobs:
@@ -13,19 +13,19 @@ jobs:
     name: Update Language Colours
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      
+      - uses: actions/checkout@v7
+
       - uses: ./.github/actions/setup-go
-      
+
       - name: Run fetchcolours script
-        run: go run cmd/fetchcolours/main.go
-      
+        run: go run ./cmd/fetchcolours
+
       - name: Check for changes
         id: git-check
         run: |
           git add -A
           git diff --staged --quiet || echo "changes=true" >> $GITHUB_OUTPUT
-      
+
       - name: Commit changes
         if: steps.git-check.outputs.changes == 'true'
         run: |
@@ -33,10 +33,9 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git add -A
           git commit -m "chore: update language colours"
-      
+
       - name: Push changes
         if: steps.git-check.outputs.changes == 'true'
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.ref }}
+        run: git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
