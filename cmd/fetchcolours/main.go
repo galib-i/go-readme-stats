@@ -1,9 +1,10 @@
-package scripts
+package main
 
 import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 
@@ -12,17 +13,23 @@ import (
 
 const (
 	url        = "https://raw.githubusercontent.com/github-linguist/linguist/refs/heads/main/lib/linguist/languages.yml"
-	outputPath = "app/stats/colours.json"
+	outputPath = "internal/stats/colours.json"
 )
 
-// FetchLanguageColours downloads and converts GitHub's language colours to JSON.
+func main() {
+	if err := fetchLanguageColours(); err != nil {
+		log.Fatalf("Failed to fetch language colours: %v", err)
+	}
+	fmt.Println("Successfully fetched language colours.")
+}
+
+// fetchLanguageColours downloads and converts GitHub's language colours to JSON.
 // Fetches the official YAML file and extracts only the colour mappings.
-func FetchLanguageColours() error {
+func fetchLanguageColours() error {
 	resp, err := http.Get(url)
 	if err != nil {
 		return fmt.Errorf("failed to fetch YAML: %v", err)
 	}
-
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)

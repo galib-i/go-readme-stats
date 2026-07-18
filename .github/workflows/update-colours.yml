@@ -18,7 +18,7 @@ jobs:
       - uses: ./.github/actions/setup-go
 
       - name: Run fetchcolours script
-        run: go run scripts/fetchcolours.go
+        run: go run ./cmd/fetchcolours
 
       - name: Check for changes
         id: git-check
