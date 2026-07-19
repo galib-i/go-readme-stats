@@ -39,6 +39,9 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
 
+          # Remove untracked files so they don't block the branch switch
+          git clean -fd
+
           # Checkout the output branch, or create it as an orphan if it doesn't exist
           if git fetch origin output 2>/dev/null; then
             git checkout output
