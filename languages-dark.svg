@@ -38,32 +38,32 @@
 
         
         
-          <rect mask="url(#rect-mask)" x="0%" y="0" width="27.8%" height="100%" fill="#f1e05a"/>
+          <rect mask="url(#rect-mask)" x="0%" y="0" width="27.7%" height="100%" fill="#f1e05a"/>
           
         
-          <rect mask="url(#rect-mask)" x="27.8%" y="0" width="25.3%" height="100%" fill="#00ADD8"/>
+          <rect mask="url(#rect-mask)" x="27.7%" y="0" width="26.1%" height="100%" fill="#00ADD8"/>
            
-            <rect x="27.8%" y="0" width="0.6%" height="100%" fill="#0D1117"/>
+            <rect x="27.7%" y="0" width="0.6%" height="100%" fill="#0D1117"/>
           
         
-          <rect mask="url(#rect-mask)" x="53.1%" y="0" width="16.7%" height="100%" fill="#ff3e00"/>
+          <rect mask="url(#rect-mask)" x="53.8%" y="0" width="16.7%" height="100%" fill="#ff3e00"/>
            
-            <rect x="53.1%" y="0" width="0.6%" height="100%" fill="#0D1117"/>
+            <rect x="53.8%" y="0" width="0.6%" height="100%" fill="#0D1117"/>
           
         
-          <rect mask="url(#rect-mask)" x="69.8%" y="0" width="14.4%" height="100%" fill="#b07219"/>
+          <rect mask="url(#rect-mask)" x="70.5%" y="0" width="14.4%" height="100%" fill="#b07219"/>
            
-            <rect x="69.8%" y="0" width="0.6%" height="100%" fill="#0D1117"/>
+            <rect x="70.5%" y="0" width="0.6%" height="100%" fill="#0D1117"/>
           
         
-          <rect mask="url(#rect-mask)" x="84.2%" y="0" width="14.2%" height="100%" fill="#3572A5"/>
+          <rect mask="url(#rect-mask)" x="84.9%" y="0" width="14.2%" height="100%" fill="#3572A5"/>
            
-            <rect x="84.2%" y="0" width="0.6%" height="100%" fill="#0D1117"/>
+            <rect x="84.9%" y="0" width="0.6%" height="100%" fill="#0D1117"/>
           
         
-          <rect mask="url(#rect-mask)" x="98.4%" y="0" width="1.6%" height="100%" fill="#F0F6FC"/>
+          <rect mask="url(#rect-mask)" x="99.10000000000001%" y="0" width="0.9%" height="100%" fill="#3178c6"/>
            
-            <rect x="98.4%" y="0" width="0.6%" height="100%" fill="#0D1117"/>
+            <rect x="99.10000000000001%" y="0" width="0.6%" height="100%" fill="#0D1117"/>
           
         
       </svg>
@@ -74,7 +74,7 @@
             <circle cx="5" cy="6" r="4.5" fill="#f1e05a"/>
             <text x="18" y="10.5" class="lang-name">
               <tspan class="lang-name-bold">JavaScript</tspan>
-              <tspan class="lang-percent">27.8%</tspan>
+              <tspan class="lang-percent">27.7%</tspan>
             </text>
           </g>
         
@@ -82,7 +82,7 @@
             <circle cx="5" cy="6" r="4.5" fill="#00ADD8"/>
             <text x="18" y="10.5" class="lang-name">
               <tspan class="lang-name-bold">Go</tspan>
-              <tspan class="lang-percent">25.3%</tspan>
+              <tspan class="lang-percent">26.1%</tspan>
             </text>
           </g>
         
@@ -111,10 +111,10 @@
           </g>
         
           <g transform="translate(150, 65)">
-            <circle cx="5" cy="6" r="4.5" fill="#F0F6FC"/>
+            <circle cx="5" cy="6" r="4.5" fill="#3178c6"/>
             <text x="18" y="10.5" class="lang-name">
-              <tspan class="lang-name-bold">Other (2)</tspan>
-              <tspan class="lang-percent">1.6%</tspan>
+              <tspan class="lang-name-bold">TypeScript</tspan>
+              <tspan class="lang-percent">0.9%</tspan>
             </text>
           </g>
         
