@@ -11,6 +11,7 @@ cards:
       - NSIS
       - PowerShell
       - Shell
+      - Makefile
   
   - output: languages-light.svg
     theme: light
@@ -24,3 +25,4 @@ cards:
       - NSIS
       - PowerShell
       - Shell
+      - Makefile
