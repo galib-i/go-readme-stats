@@ -12,6 +12,7 @@ cards:
       - PowerShell
       - Shell
       - Makefile
+      - QML
   
   - output: languages-light.svg
     theme: light
@@ -26,3 +27,4 @@ cards:
       - PowerShell
       - Shell
       - Makefile
+      - QML
