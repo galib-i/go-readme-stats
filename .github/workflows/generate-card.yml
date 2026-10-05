@@ -8,7 +8,7 @@ on:
     paths:
       - "stats.yml"
   schedule:
-    - cron: "0 */12 * * *"
+    - cron: "0 0 * * *" # Once a day
   workflow_dispatch:
 
 jobs:

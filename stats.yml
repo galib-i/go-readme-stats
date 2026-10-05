@@ -13,7 +13,7 @@ cards:
       - Shell
       - Makefile
       - QML
-  
+
   - output: languages-light.svg
     theme: light
     header: Languages
