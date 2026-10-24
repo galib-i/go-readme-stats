@@ -29,11 +29,7 @@ func TestAddLanguageColours(t *testing.T) {
 		{Name: "Java", Percent: 20.0},
 	}
 
-	err := addLanguageColours(languages)
-	if err != nil {
-		t.Errorf("addLanguageColours() error = %v", err)
-		return
-	}
+	addLanguageColours(languages)
 
 	if languages[0].Colour != "#00ADD8" {
 		t.Errorf("Go language colour = %s, want #00ADD8", languages[0].Colour)

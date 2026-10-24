@@ -4,7 +4,7 @@ cards:
     header: Languages
     mode: geometric
     max_langs: 6
-    ignore:
+    ignore: &ignore
       - Jupyter Notebook
       - HTML
       - CSS
@@ -20,13 +20,4 @@ cards:
     header: Languages
     mode: geometric
     max_langs: 6
-    ignore:
-      - Jupyter Notebook
-      - HTML
-      - CSS
-      - NSIS
-      - PowerShell
-      - Shell
-      - Makefile
-      - QML
-      - Svelte
+    ignore: *ignore

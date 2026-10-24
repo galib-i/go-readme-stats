@@ -19,5 +19,20 @@ jobs:
 
       - uses: ./.github/actions/setup-go
 
+      - name: Check formatting
+        run: |
+          unformatted="$(gofmt -l .)"
+          if [ -n "$unformatted" ]; then
+            echo "The following files are not formatted:"
+            echo "$unformatted"
+            exit 1
+          fi
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Build
+        run: go build ./...
+
       - name: Run tests
-        run: go test ./... -v
+        run: go test -race ./... -v

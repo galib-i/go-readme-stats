@@ -4,8 +4,10 @@ import (
 	"context"
 	_ "embed"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"slices"
 	"sync"
 )
@@ -15,6 +17,8 @@ var coloursJSON []byte
 
 const (
 	defaultColour = "#F0F6FC"
+
+	maxConcurrentRequests = 20
 )
 
 type repository struct {
@@ -28,26 +32,30 @@ type Lang struct {
 	Colour  string
 }
 
-// FetchStats retrieves language statistics for the authenticated user.
-// Excludes forked repositories and languages in the ignored list.
+// FetchStats returns language statistics for the user's own repositories,
+// excluding forked repositories and ignored languages.
+//
+// It fails outright instead of returning partial numbers, so a broken token or
+// a rate limit can never publish a misleading card.
 func FetchStats(ctx context.Context, ignoredLanguages []string, mode string, maxLangs int) ([]Lang, error) {
-	repos, err := fetchRepoNames(ctx)
+	repos, err := fetchRepositories(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch repositories: %w", err)
 	}
 
-	username, err := getUsername(ctx)
+	username, err := fetchUsername(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get authenticated user: %w", err)
 	}
 
-	languageTotals := make(map[string]int)
-	languageFreq := make(map[string]int)
+	var (
+		languageTotals = make(map[string]int)
+		languageFreq   = make(map[string]int)
+		failures       []error
+		mu             sync.Mutex
+		wg             sync.WaitGroup
+	)
 
-	var wg sync.WaitGroup
-	var mu sync.Mutex
-
-	maxConcurrentRequests := 20
 	sem := make(chan struct{}, maxConcurrentRequests)
 
 	for _, repo := range repos {
@@ -56,25 +64,34 @@ func FetchStats(ctx context.Context, ignoredLanguages []string, mode string, max
 		}
 
 		wg.Go(func() {
-
 			sem <- struct{}{}
 			defer func() { <-sem }()
 
 			languages, err := fetchRepoLanguages(ctx, username, repo.Name)
 			if err != nil {
-				log.Printf("Warning: Failed to fetch languages for %s: %v", repo.Name, err)
+				// A repository with no commits has no languages; that is not a failure.
+				if isStatus(err, http.StatusNotFound) {
+					log.Printf("Warning: Skipping %s: repository has no language data", repo.Name)
+
+					return
+				}
+
+				mu.Lock()
+				failures = append(failures, fmt.Errorf("%s: %w", repo.Name, err))
+				mu.Unlock()
+
 				return
 			}
 
 			mu.Lock()
 			defer mu.Unlock()
 
-			for lang, bytes := range languages {
+			for lang, size := range languages {
 				if slices.Contains(ignoredLanguages, lang) {
 					continue
 				}
 
-				languageTotals[lang] += bytes
+				languageTotals[lang] += size
 				languageFreq[lang]++
 			}
 		})
@@ -82,17 +99,27 @@ func FetchStats(ctx context.Context, ignoredLanguages []string, mode string, max
 
 	wg.Wait()
 
-	stats := calculateStats(languageTotals, languageFreq, mode, maxLangs)
-	if err := addLanguageColours(stats); err != nil {
-		return nil, fmt.Errorf("failed to add colours: %w", err)
+	if len(failures) > 0 {
+		return nil, fmt.Errorf("%d of %d repositories failed (first error: %w)", len(failures), len(repos), failures[0])
 	}
-	return stats, nil
+
+	if len(languageTotals) == 0 {
+		return nil, errors.New("no languages found: check the token scopes and the ignore list")
+	}
+
+	languages := calculateStats(languageTotals, languageFreq, mode, maxLangs)
+	addLanguageColours(languages)
+
+	return languages, nil
 }
 
-func addLanguageColours(languages []Lang) error {
+// addLanguageColours sets each colour, falling back to the default when the
+// embedded list has no entry for a language.
+func addLanguageColours(languages []Lang) {
 	colours, err := loadLanguageColours()
 	if err != nil {
 		log.Printf("Warning: Failed to load colours: %v", err)
+
 		colours = make(map[string]string)
 	}
 
@@ -101,10 +128,9 @@ func addLanguageColours(languages []Lang) error {
 		if !exists {
 			colour = defaultColour
 		}
+
 		languages[i].Colour = colour
 	}
-
-	return nil
 }
 
 func loadLanguageColours() (map[string]string, error) {

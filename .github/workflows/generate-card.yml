@@ -11,21 +11,22 @@ on:
     - cron: "0 0 * * *" # Once a day
   workflow_dispatch:
 
+concurrency:
+  group: generate-card
+  cancel-in-progress: true
+
 jobs:
   generate:
-    name: Generate languages.svg
+    name: Generate language cards
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
 
       - name: Set up Go
-        uses: actions/setup-go@v7
-        with:
-          go-version: "stable"
-          cache: true
+        uses: ./.github/actions/setup-go
 
-      - name: Generate languages.svg
+      - name: Generate language cards
         run: go run ./cmd/go-readme-stats
         env:
           GITHUB_TOKEN: ${{ secrets.STATS_TOKEN }}

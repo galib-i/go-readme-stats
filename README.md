@@ -21,7 +21,7 @@ Cards are generated using GitHub Actions and added to an orphan branch, keeping 
 1. Clone or [fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) this repository, enabling all GitHub Action workflows.
 2. Create a [GitHub Personal Access Token](https://github.com/settings/tokens/new) with **repo** and **read:user** scopes, _setting the expiry as you see appropriate_
 3. In your `go-readme-stats` repository, go to **Settings > Secrets and variables > Actions**, press **New repository secret** and add:
-   - **Name:** `STAT_TOKEN`
+   - **Name:** `STATS_TOKEN`
    - **Value:** _the generated PAT_
 
 4. Go to the **Actions** tab in your repository, select the card generation workflow, and click **Run workflow** to generate your first SVG.
@@ -33,11 +33,13 @@ Cards are generated using GitHub Actions and added to an orphan branch, keeping 
 
 ### Configuration
 
+Only repositories you own are counted, and forks are excluded.
+
 By default, up to 6 languages are shown. If there are more, the top 5 are shown individually and the rest are grouped under _Other_.
 
-It is recommended to configure your card by simply editing `stats.yml`, alternatively, you can use command-line flags to the run command on line 29 of `.github/workflows/generate-card.yml`.
+It is recommended to configure your card by simply editing `stats.yml`. Alternatively, you can pass command-line flags to the run command in `.github/workflows/generate-card.yml`.
 
-Configuration is prioritised in this order: flags, `stats.yml`, then defaults.
+Configuration is prioritised in this order: flags, `stats.yml`, then defaults. Values passed as flags apply to every card in `stats.yml`.
 
 ```yaml
 cards:

@@ -9,7 +9,7 @@ on:
   workflow_dispatch: # Manual trigger
 
 jobs:
-  update-colors:
+  update-colours:
     name: Update Language Colours
     runs-on: ubuntu-latest
     steps:

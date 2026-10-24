@@ -11,6 +11,7 @@ func TestCalculateSVGHeight(t *testing.T) {
 		languageCount  int
 		expectedHeight float64
 	}{
+		{"No languages", 0, 114.5},
 		{"One language", 1, 114.5},
 		{"Two languages", 2, 114.5},
 		{"Three languages", 3, 134.5},
@@ -24,6 +25,26 @@ func TestCalculateSVGHeight(t *testing.T) {
 			result := calculateSVGHeight(tt.languageCount)
 			if result != tt.expectedHeight {
 				t.Errorf("calculateSVGHeight(%d) = %v, want %v", tt.languageCount, result, tt.expectedHeight)
+			}
+		})
+	}
+}
+
+func TestTruncateName(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{"Short name", "Go", "Go"},
+		{"Long name", "VisualBasic12", "VisualBasic1..."},
+		{"Accented name", "ÜnïcödéLänguageX", "ÜnïcödéLängu..."},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := truncateName(tt.input); got != tt.expected {
+				t.Errorf("truncateName(%q) = %q, want %q", tt.input, got, tt.expected)
 			}
 		})
 	}

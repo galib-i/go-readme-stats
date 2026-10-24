@@ -5,11 +5,11 @@
 *.so
 *.dylib
 *.test
-go-readme-stats
+/go-readme-stats
 
 # Output
 *.out
-languages.svg
+/languages*.svg
 
 # Environment
 .env

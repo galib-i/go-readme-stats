@@ -13,53 +13,58 @@ const (
 	baseHeight   = 114.5
 	heightStep   = 20.0
 	templateName = "template.svg"
+	maxNameLen   = 12
 )
 
 //go:embed template.svg
 var templateContent string
 
 type SVGData struct {
-	Theme         Theme
-	Height        float64
-	Header        string
-	Languages     []stats.Lang // Includes colour codes
-	LanguageCount int
+	Theme     Theme
+	Height    float64
+	Header    string
+	Languages []stats.Lang // Includes colour codes
 }
 
 // Generate creates an SVG of language statistics.
 func Generate(theme, header string, languages []stats.Lang) (string, error) {
-	languageCount := len(languages)
-
 	data := SVGData{
-		Theme:         GetTheme(theme),
-		Height:        calculateSVGHeight(languageCount),
-		Header:        header,
-		Languages:     languages,
-		LanguageCount: languageCount,
+		Theme:     GetTheme(theme),
+		Height:    calculateSVGHeight(len(languages)),
+		Header:    header,
+		Languages: languages,
 	}
 
 	return generateSVG(data)
 }
 
-// calculateSVGHeight returns SVG height adjusted for language count.
+// calculateSVGHeight grows the card by one row per pair of languages, since the
+// legend shows two per row.
 func calculateSVGHeight(languageCount int) float64 {
-	steps := (languageCount + 1) / 2
-	return baseHeight + float64(steps-1)*heightStep
+	rows := max(1, (languageCount+1)/2)
+
+	return baseHeight + float64(rows-1)*heightStep
+}
+
+// truncateName shortens long names to fit the legend. It counts letters rather
+// than bytes, so accented names are never cut in half.
+func truncateName(name string) string {
+	runes := []rune(name)
+	if len(runes) <= maxNameLen {
+		return name
+	}
+
+	return string(runes[:maxNameLen]) + "..."
 }
 
 func generateSVG(data SVGData) (string, error) {
 	tmpl, err := template.New(templateName).Funcs(template.FuncMap{
-		"sumPrev": sumPreviousPercent,
-		"add":     func(a, b int) int { return a + b },
-		"mul":     func(a, b int) int { return a * b },
-		"div":     func(a, b int) int { return a / b },
-		"mod":     func(a, b int) int { return a % b },
-		"truncate": func(name string) string {
-			if len(name) > 12 {
-				return name[:12] + "..."
-			}
-			return name
-		},
+		"sumPrev":  sumPreviousPercent,
+		"add":      func(a, b int) int { return a + b },
+		"mul":      func(a, b int) int { return a * b },
+		"div":      func(a, b int) int { return a / b },
+		"mod":      func(a, b int) int { return a % b },
+		"truncate": truncateName,
 	}).Parse(templateContent)
 
 	if err != nil {

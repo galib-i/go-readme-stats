@@ -9,7 +9,7 @@ type Theme struct {
 	SecondaryText string
 }
 
-// themes contains predefined colour schemes for SVG generation.
+// themes are the built-in colour schemes.
 var themes = map[string]Theme{
 	"dark": {
 		Background:    "#0D1117",
@@ -29,6 +29,12 @@ var themes = map[string]Theme{
 		Text:          "#1F2328",
 		SecondaryText: "#59636E",
 	},
+}
+
+// ThemeExists reports whether a theme with the given name is defined.
+func ThemeExists(name string) bool {
+	_, exists := themes[name]
+	return exists
 }
 
 // GetTheme returns the theme configuration for the given name.

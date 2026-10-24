@@ -7,54 +7,75 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/goccy/go-yaml"
 )
 
 const (
-	url        = "https://raw.githubusercontent.com/github-linguist/linguist/refs/heads/main/lib/linguist/languages.yml"
-	outputPath = "internal/stats/colours.json"
+	sourceURL   = "https://raw.githubusercontent.com/github-linguist/linguist/refs/heads/main/lib/linguist/languages.yml"
+	outputPath  = "internal/stats/colours.json"
+	httpTimeout = 30 * time.Second
+
+	// A partial parse would wipe colours from the card, so refuse to write one.
+	minLanguages = 100
 )
 
 func main() {
 	if err := fetchLanguageColours(); err != nil {
 		log.Fatalf("Failed to fetch language colours: %v", err)
 	}
+
 	fmt.Println("Successfully fetched language colours.")
 }
 
-// fetchLanguageColours downloads and converts GitHub's language colours to JSON.
-// Fetches the official YAML file and extracts only the colour mappings.
+// fetchLanguageColours downloads GitHub's language definitions and keeps only
+// the colours.
 func fetchLanguageColours() error {
-	resp, err := http.Get(url)
+	client := &http.Client{Timeout: httpTimeout}
+
+	resp, err := client.Get(sourceURL)
 	if err != nil {
-		return fmt.Errorf("failed to fetch YAML: %v", err)
+		return fmt.Errorf("failed to fetch YAML: %w", err)
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("failed to fetch YAML: unexpected status %d", resp.StatusCode)
+	}
+
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("failed to read response: %v", err)
+		return fmt.Errorf("failed to read response: %w", err)
 	}
 
-	var data map[string]any
-	if err := yaml.Unmarshal(body, &data); err != nil {
-		return fmt.Errorf("failed to unmarshal YAML: %v", err)
+	var definitions map[string]any
+	if err := yaml.Unmarshal(body, &definitions); err != nil {
+		return fmt.Errorf("failed to unmarshal YAML: %w", err)
 	}
 
-	filtered := make(map[string]string)
-	for k, v := range data {
-		if m, ok := v.(map[string]any); ok {
-			if colour, ok := m["color"].(string); ok {
-				filtered[k] = colour
-			}
+	colours := make(map[string]string)
+
+	for language, definition := range definitions {
+		fields, isDefinition := definition.(map[string]any)
+		if !isDefinition {
+			continue
+		}
+
+		// "color" is GitHub's own key name.
+		if colour, hasColour := fields["color"].(string); hasColour {
+			colours[language] = colour
 		}
 	}
 
-	jsonData, err := json.MarshalIndent(filtered, "", "  ")
-	if err != nil {
-		return fmt.Errorf("failed to marshal JSON: %v", err)
+	if len(colours) < minLanguages {
+		return fmt.Errorf("refusing to write %s: only %d languages parsed", outputPath, len(colours))
 	}
 
-	return os.WriteFile(outputPath, jsonData, 0644)
+	jsonData, err := json.MarshalIndent(colours, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal JSON: %w", err)
+	}
+
+	return os.WriteFile(outputPath, jsonData, 0o644)
 }
