@@ -1,6 +1,7 @@
 package stats
 
 import (
+	"math"
 	"slices"
 	"testing"
 )
@@ -56,7 +57,7 @@ func TestCalculateStats_Raw(t *testing.T) {
 				{Name: "Python", Percent: 13.6},
 				{Name: "Java", Percent: 9.1},
 				{Name: "C++", Percent: 7.3},
-				{Name: "Other (3)", Percent: 6.4},
+				{Name: "Other (3)", Percent: 6.3},
 			},
 		},
 	}
@@ -194,6 +195,32 @@ func TestFormatStats_SharesScoredLanguages(t *testing.T) {
 	// Grouping before rounding gives 34.4; summing the rounded rows gives 34.5.
 	if narrow[2].Percent != 34.4 {
 		t.Errorf("Other (5) = %v%%, want 34.4%%", narrow[2].Percent)
+	}
+}
+
+func TestFormatStats_RoundingsSumToOneHundred(t *testing.T) {
+	// Equal thirds round to 33.3 each, which totals 99.9 on its own.
+	totals := map[string]int{"A": 1, "B": 1, "C": 1}
+	freq := make(map[string]int, len(totals))
+	for lang := range totals {
+		freq[lang] = 1
+	}
+
+	result := FormatStats(scoreLanguages(totals, freq, "bytes"), 0)
+
+	if len(result) != 3 {
+		t.Fatalf("got %d rows, want 3", len(result))
+	}
+	if result[2].Percent != 33.4 {
+		t.Errorf("last row = %v%%, want 33.4%%", result[2].Percent)
+	}
+
+	var sum float64
+	for _, lang := range result {
+		sum += lang.Percent
+	}
+	if math.Abs(sum-100) > 1e-9 {
+		t.Errorf("percentages total %v, want 100: %+v", sum, result)
 	}
 }
 

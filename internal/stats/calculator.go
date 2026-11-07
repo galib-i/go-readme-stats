@@ -76,6 +76,16 @@ func FormatStats(scored []Lang, maxLangs int) []Lang {
 		result[i].Percent = roundPercent(result[i].Percent)
 	}
 
+	// Rounded rows can add up to 99.9 or 100.1, so the last row takes the
+	// remainder and the bar always ends at exactly 100%.
+	if len(result) > 0 {
+		var rounded float64
+		for _, lang := range result[:len(result)-1] {
+			rounded += lang.Percent
+		}
+		result[len(result)-1].Percent = roundPercent(100 - rounded)
+	}
+
 	return result
 }
 
