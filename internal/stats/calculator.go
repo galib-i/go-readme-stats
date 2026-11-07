@@ -11,10 +11,10 @@ const (
 	percentScale = 10 // Rounds to one decimal place, e.g. 10.4%
 )
 
-// calculateStats computes language percentages by raw bytes or geometric mean.
-// Languages are sorted by descending percentage, then ascending name.
-// Anything past the top maxLangs-1 is grouped into "Other".
-func calculateStats(languageTotals, languageFreq map[string]int, mode string, maxLangs int) []Lang {
+// scoreLanguages ranks languages by their share. It leaves percentages
+// unrounded for FormatStats to sum, and ignores max_langs so one fetch can
+// serve several cards.
+func scoreLanguages(languageTotals, languageFreq map[string]int, mode string) []Lang {
 	scores := make(map[string]float64)
 	var totalScore float64
 
@@ -33,7 +33,7 @@ func calculateStats(languageTotals, languageFreq map[string]int, mode string, ma
 		totalScore += score
 	}
 
-	var result []Lang
+	result := make([]Lang, 0, len(scores))
 	for lang, score := range scores {
 		result = append(result, Lang{
 			Name:    lang,
@@ -41,13 +41,21 @@ func calculateStats(languageTotals, languageFreq map[string]int, mode string, ma
 		})
 	}
 
-	// Highest percentage first; the name breaks ties so the order never wobbles.
+	// Highest percentage first; ties go by name, so the order is stable.
 	slices.SortFunc(result, func(a, b Lang) int {
 		if c := cmp.Compare(b.Percent, a.Percent); c != 0 {
 			return c
 		}
 		return cmp.Compare(a.Name, b.Name)
 	})
+
+	return result
+}
+
+// FormatStats groups everything past the top maxLangs-1 into "Other", then
+// rounds the percentages. It does not modify the input, so cards can share it.
+func FormatStats(scored []Lang, maxLangs int) []Lang {
+	result := slices.Clone(scored)
 
 	if maxLangs > 0 && len(result) > maxLangs {
 		top := maxLangs - 1
@@ -60,6 +68,7 @@ func calculateStats(languageTotals, languageFreq map[string]int, mode string, ma
 		result = append(result[:top], Lang{
 			Name:    fmt.Sprintf("Other (%d)", len(result)-top),
 			Percent: otherPercent,
+			Colour:  defaultColour,
 		})
 	}
 

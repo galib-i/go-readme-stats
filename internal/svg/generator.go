@@ -23,10 +23,10 @@ type SVGData struct {
 	Theme     Theme
 	Height    float64
 	Header    string
-	Languages []stats.Lang // Includes colour codes
+	Languages []stats.Lang
 }
 
-// Generate creates an SVG of language statistics.
+// Generate renders the language statistics as an SVG card.
 func Generate(theme, header string, languages []stats.Lang) (string, error) {
 	data := SVGData{
 		Theme:     GetTheme(theme),
@@ -38,16 +38,15 @@ func Generate(theme, header string, languages []stats.Lang) (string, error) {
 	return generateSVG(data)
 }
 
-// calculateSVGHeight grows the card by one row per pair of languages, since the
-// legend shows two per row.
+// calculateSVGHeight grows the card by one row per pair of languages in the legend.
 func calculateSVGHeight(languageCount int) float64 {
 	rows := max(1, (languageCount+1)/2)
 
 	return baseHeight + float64(rows-1)*heightStep
 }
 
-// truncateName shortens long names to fit the legend. It counts letters rather
-// than bytes, so accented names are never cut in half.
+// truncateName shortens names to fit the legend. It counts runes, so accented
+// names are never cut in half.
 func truncateName(name string) string {
 	runes := []rune(name)
 	if len(runes) <= maxNameLen {
@@ -79,7 +78,7 @@ func generateSVG(data SVGData) (string, error) {
 	return buf.String(), nil
 }
 
-// sumPreviousPercent calculates cumulative percentage for stacked progress bars.
+// sumPreviousPercent adds up the percentages before idx, for bar offsets.
 func sumPreviousPercent(languages []stats.Lang, idx int) float64 {
 	sum := 0.0
 	for i := range idx {

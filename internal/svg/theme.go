@@ -37,8 +37,7 @@ func ThemeExists(name string) bool {
 	return exists
 }
 
-// GetTheme returns the theme configuration for the given name.
-// Falls back to DefaultTheme if the requested theme doesn't exist.
+// GetTheme returns the theme for the given name, falling back to DefaultTheme.
 func GetTheme(name string) Theme {
 	if theme, exists := themes[name]; exists {
 		return theme

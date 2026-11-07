@@ -69,8 +69,8 @@ func TestLoadConfig_MissingFile(t *testing.T) {
 	}
 }
 
-// Guards the shipped stats.yml: it must parse, and the shared ignore list must
-// really reach every card.
+// Guards the shipped stats.yml: it must parse, and every card must get the
+// shared ignore list.
 func TestShippedConfigParses(t *testing.T) {
 	cfg, err := loadConfig(filepath.Join("..", "..", "stats.yml"))
 	if err != nil {

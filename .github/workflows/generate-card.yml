@@ -39,7 +39,6 @@ jobs:
       # afterwards.
       - name: Deploy to output branch
         run: |
-          # Copy the generated SVG to a temp directory
           mkdir -p /tmp/card-output
           cp ./*.svg /tmp/card-output/
 
@@ -59,10 +58,8 @@ jobs:
           # Remove all files so the branch only contains the SVG
           git rm -rf . --quiet
 
-          # Move the SVG back into the working directory
           mv /tmp/card-output/*.svg .
 
-          # Stage the SVG
           git add ./*.svg
 
           # Only commit and push if there are changes

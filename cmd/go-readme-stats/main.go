@@ -37,7 +37,7 @@ type config struct {
 }
 
 // flagOverrides holds values given on the command line. set records which flags
-// were actually passed, so an empty value can still override stats.yml.
+// were passed, so an empty value can still override stats.yml.
 type flagOverrides struct {
 	set      map[string]bool
 	output   string
@@ -62,7 +62,7 @@ func parseFlags() flagOverrides {
 	flag.Visit(func(f *flag.Flag) { set[f.Name] = true })
 
 	var ignored []string
-	for _, name := range strings.Split(*ignore, ",") {
+	for name := range strings.SplitSeq(*ignore, ",") {
 		if name = strings.TrimSpace(name); name != "" {
 			ignored = append(ignored, name)
 		}
@@ -79,8 +79,7 @@ func parseFlags() flagOverrides {
 	}
 }
 
-// applyFlagOverrides lets flags win over the file. Priority is: flags, then
-// stats.yml, then defaults.
+// applyFlagOverrides lets flags win over the file's values.
 func applyFlagOverrides(cfg config, flags flagOverrides) config {
 	for i := range cfg.Cards {
 		card := &cfg.Cards[i]
@@ -142,8 +141,8 @@ func loadConfig(path string) (config, error) {
 	return cfg, nil
 }
 
-// warnUnknownValues flags settings that would otherwise fall back to a default
-// without a word.
+// warnUnknownValues warns about settings that would quietly fall back to a
+// default.
 func warnUnknownValues(card cardConfig) {
 	switch card.Mode {
 	case "bytes", "geometric":
@@ -157,11 +156,11 @@ func warnUnknownValues(card cardConfig) {
 }
 
 // statsKey is the set of settings that decide a fetch, so cards asking for the
-// same numbers can share one call.
+// same numbers share one call. max_langs is left out on purpose: it only picks
+// how many rows a card shows.
 type statsKey struct {
-	mode     string
-	maxLangs int
-	ignore   string
+	mode   string
+	ignore string
 }
 
 func newStatsKey(card cardConfig) statsKey {
@@ -169,9 +168,8 @@ func newStatsKey(card cardConfig) statsKey {
 	slices.Sort(ignored)
 
 	return statsKey{
-		mode:     card.Mode,
-		maxLangs: card.MaxLangs,
-		ignore:   strings.Join(ignored, ","),
+		mode:   card.Mode,
+		ignore: strings.Join(ignored, ","),
 	}
 }
 
@@ -201,15 +199,17 @@ func run() error {
 
 		key := newStatsKey(card)
 
-		languages, fetched := cache[key]
+		scored, fetched := cache[key]
 		if !fetched {
-			languages, err = stats.FetchStats(ctx, card.Ignore, card.Mode, card.MaxLangs)
+			scored, err = stats.FetchStats(ctx, card.Ignore, card.Mode)
 			if err != nil {
 				return fmt.Errorf("failed to fetch stats for %s: %w", card.Output, err)
 			}
 
-			cache[key] = languages
+			cache[key] = scored
 		}
+
+		languages := stats.FormatStats(scored, card.MaxLangs)
 
 		svgContent, err := svg.Generate(card.Theme, card.Header, languages)
 		if err != nil {

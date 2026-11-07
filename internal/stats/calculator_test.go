@@ -1,6 +1,7 @@
 package stats
 
 import (
+	"slices"
 	"testing"
 )
 
@@ -62,13 +63,13 @@ func TestCalculateStats_Raw(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Create frequency map with 1 for all languages
+			// Every language is in one repo, so each frequency is 1.
 			freq := make(map[string]int, len(tt.input))
 			for lang := range tt.input {
 				freq[lang] = 1
 			}
 
-			result := calculateStats(tt.input, freq, "", 6)
+			result := FormatStats(scoreLanguages(tt.input, freq, ""), 6)
 
 			if len(result) != len(tt.expected) {
 				t.Errorf("got %d languages, expected %d", len(result), len(tt.expected))
@@ -131,7 +132,7 @@ func TestCalculateStats_Geometric(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := calculateStats(tt.totals, tt.freq, "geometric", 6)
+			result := FormatStats(scoreLanguages(tt.totals, tt.freq, "geometric"), 6)
 
 			if len(result) != len(tt.expected) {
 				t.Errorf("got %d languages, expected %d", len(result), len(tt.expected))
@@ -147,6 +148,52 @@ func TestCalculateStats_Geometric(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestFormatStats_SharesScoredLanguages(t *testing.T) {
+	totals := map[string]int{
+		"Go":         5000,
+		"JavaScript": 3000,
+		"Python":     2000,
+		"Java":       1000,
+		"Rust":       500,
+		"C++":        400,
+		"HTML":       300,
+	}
+
+	freq := make(map[string]int, len(totals))
+	for lang := range totals {
+		freq[lang] = 1
+	}
+
+	scored := scoreLanguages(totals, freq, "bytes")
+	before := slices.Clone(scored)
+
+	narrow := FormatStats(scored, 3)
+	wide := FormatStats(scored, 7)
+
+	if !slices.Equal(scored, before) {
+		t.Errorf("FormatStats changed the scored languages: %+v, want %+v", scored, before)
+	}
+
+	if len(narrow) != 3 || narrow[2].Name != "Other (5)" {
+		t.Fatalf("FormatStats(max_langs 3) = %+v, want 2 rows plus Other (5)", narrow)
+	}
+
+	if len(wide) != len(scored) {
+		t.Fatalf("FormatStats(max_langs 7) returned %d rows, want all %d", len(wide), len(scored))
+	}
+
+	for i := range narrow[:len(narrow)-1] {
+		if narrow[i] != wide[i] {
+			t.Errorf("row %d differs between cards: %+v vs %+v", i, narrow[i], wide[i])
+		}
+	}
+
+	// Grouping before rounding gives 34.4; summing the rounded rows gives 34.5.
+	if narrow[2].Percent != 34.4 {
+		t.Errorf("Other (5) = %v%%, want 34.4%%", narrow[2].Percent)
 	}
 }
 

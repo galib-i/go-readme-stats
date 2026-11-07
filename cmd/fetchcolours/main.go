@@ -17,7 +17,7 @@ const (
 	outputPath  = "internal/stats/colours.json"
 	httpTimeout = 30 * time.Second
 
-	// A partial parse would wipe colours from the card, so refuse to write one.
+	// A partial parse would wipe colours from every card, so refuse to write one.
 	minLanguages = 100
 )
 

@@ -33,11 +33,12 @@ type Lang struct {
 }
 
 // FetchStats returns language statistics for the user's own repositories,
-// excluding forked repositories and ignored languages.
+// excluding forks and ignored languages.
 //
-// It fails outright instead of returning partial numbers, so a broken token or
-// a rate limit can never publish a misleading card.
-func FetchStats(ctx context.Context, ignoredLanguages []string, mode string, maxLangs int) ([]Lang, error) {
+// Every language comes back unrounded and untruncated, so call FormatStats for
+// one card's rows. It fails outright rather than return partial numbers, so a
+// bad token or rate limit can never publish a misleading card.
+func FetchStats(ctx context.Context, ignoredLanguages []string, mode string) ([]Lang, error) {
 	repos, err := fetchRepositories(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch repositories: %w", err)
@@ -69,7 +70,7 @@ func FetchStats(ctx context.Context, ignoredLanguages []string, mode string, max
 
 			languages, err := fetchRepoLanguages(ctx, username, repo.Name)
 			if err != nil {
-				// A repository with no commits has no languages; that is not a failure.
+				// A repository with no commits has no languages, so a 404 is not a failure.
 				if isStatus(err, http.StatusNotFound) {
 					log.Printf("Warning: Skipping %s: repository has no language data", repo.Name)
 
@@ -107,14 +108,13 @@ func FetchStats(ctx context.Context, ignoredLanguages []string, mode string, max
 		return nil, errors.New("no languages found: check the token scopes and the ignore list")
 	}
 
-	languages := calculateStats(languageTotals, languageFreq, mode, maxLangs)
+	languages := scoreLanguages(languageTotals, languageFreq, mode)
 	addLanguageColours(languages)
 
 	return languages, nil
 }
 
-// addLanguageColours sets each colour, falling back to the default when the
-// embedded list has no entry for a language.
+// addLanguageColours sets each colour, using the default for unknown languages.
 func addLanguageColours(languages []Lang) {
 	colours, err := loadLanguageColours()
 	if err != nil {

@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-// apiBaseURL can be overridden so tests can point at a local server.
+// apiBaseURL is a variable so tests can point it at a local server.
 var apiBaseURL = "https://api.github.com"
 
 const (
@@ -20,7 +20,7 @@ const (
 	maxAttempts    = 2 // one retry for temporary failures
 )
 
-// httpClient is shared so connections are reused. The timeout stops a stalled
+// httpClient is shared so connections are reused; the timeout stops a stalled
 // request from hanging the workflow.
 var httpClient = &http.Client{Timeout: requestTimeout}
 
@@ -47,8 +47,8 @@ func isStatus(err error, code int) bool {
 	return errors.As(err, &apiErr) && apiErr.StatusCode == code
 }
 
-// fetchRepositories lists the user's own repositories. Forks, and repositories
-// they only collaborate on, are left out.
+// fetchRepositories lists the user's own repositories, leaving out forks and
+// repos they only collaborate on.
 func fetchRepositories(ctx context.Context) ([]repository, error) {
 	var repos []repository
 
@@ -160,8 +160,8 @@ func doRequest(ctx context.Context, url string) ([]byte, bool, error) {
 		// Read the body out so the connection can be reused.
 		_, _ = io.Copy(io.Discard, resp.Body)
 
-		// Only server errors are worth another try; a bad token or a rate limit
-		// needs a person to fix it.
+		// Only server errors are worth retrying; a bad token or rate limit needs a
+		// person to fix it.
 		return nil, resp.StatusCode >= 500, &apiError{StatusCode: resp.StatusCode, URL: url}
 	}
 

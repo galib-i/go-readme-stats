@@ -179,10 +179,12 @@ func TestFetchStats_SkipsForksAndIgnoredLanguages(t *testing.T) {
 
 	useTestServer(t, server.URL)
 
-	languages, err := FetchStats(context.Background(), []string{"HTML"}, "bytes", 6)
+	scored, err := FetchStats(context.Background(), []string{"HTML"}, "bytes")
 	if err != nil {
 		t.Fatalf("FetchStats() error = %v", err)
 	}
+
+	languages := FormatStats(scored, 6)
 
 	if len(languages) != 1 {
 		t.Fatalf("FetchStats() returned %d languages, want 1: %+v", len(languages), languages)
@@ -212,19 +214,19 @@ func TestFetchStats_FailsOnRepoError(t *testing.T) {
 
 	useTestServer(t, server.URL)
 
-	if _, err := FetchStats(context.Background(), nil, "bytes", 6); err == nil {
+	if _, err := FetchStats(context.Background(), nil, "bytes"); err == nil {
 		t.Error("FetchStats() expected an error when a repository lookup fails")
 	}
 }
 
 func TestFetchStats_FailsWhenNothingIsFound(t *testing.T) {
-	// A 404 means "no language data", so every repo here is skipped.
+	// Every repo 404s, so no languages are found and FetchStats must fail.
 	server := newGitHubStub(t, []repository{{Name: "empty"}}, nil)
 	defer server.Close()
 
 	useTestServer(t, server.URL)
 
-	if _, err := FetchStats(context.Background(), nil, "bytes", 6); err == nil {
+	if _, err := FetchStats(context.Background(), nil, "bytes"); err == nil {
 		t.Error("FetchStats() expected an error when no languages are found")
 	}
 }
